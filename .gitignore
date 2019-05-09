@@ -1,3 +1,5 @@
 bindiff_test
 *.o
 scratchpad
+.venv/
+Pipfile
