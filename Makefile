@@ -1,6 +1,8 @@
+CPPFLAGS += -I.
 CFLAGS += -Wall -Werror
 
-OFILES = bindiff.o
+COMMON_OFILES = compare.o
+OFILES = bindiff.o $(COMMON_OFILES)
 TEST_OFILES = test/test.o
 
 all: my-bindiff
@@ -14,7 +16,7 @@ behave: my-bindiff
 clean:
 	-rm -rf my-bindiff bindiff_test $(OFILES) $(TEST_OFILES)
 
-bindiff_test: $(TEST_OFILES)
+bindiff_test: $(TEST_OFILES) $(COMMON_OFILES)
 
 my-bindiff: $(OFILES)
 
