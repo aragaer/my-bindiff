@@ -1,1 +1,2 @@
-# Simple bindiff application
+# my-bindiff
+Simple bindiff application
