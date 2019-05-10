@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 
 #include <bindiff.h>
@@ -10,7 +11,7 @@ diff_t *compare(char *first, char *second, size_t size) {
   result->next = NULL;
   result->first = first;
   result->second = second;
-  result->printable = 1;
+  result->printable = isprint(*first) && isprint(*second);
   result->offset = 0;
   return result;
 }

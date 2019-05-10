@@ -36,8 +36,19 @@ int main(int argc, char *argv[]) {
       result = result->next;
       printf("Difference starting at offset %ld (size %ld):\n",
              current->offset, current->size);
-      printf(">>> str %.*s\n", (int) current->size, current->first);
-      printf("<<< str %.*s\n", (int) current->size, current->second);
+      if (current->printable) {
+        printf(">>> str %.*s\n", (int) current->size, current->first);
+        printf("<<< str %.*s\n", (int) current->size, current->second);
+      } else {
+        int i;
+        printf(">>> hex");
+        for (i = 0; i < current->size; i++)
+          printf(" %02X", (unsigned char) current->first[i]);
+        printf("\n<<< hex");
+        for (i = 0; i < current->size; i++)
+          printf(" %02X", (unsigned char) current->second[i]);
+        printf("\n");
+      }
       free(current);
     }
 

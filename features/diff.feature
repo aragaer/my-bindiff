@@ -42,15 +42,14 @@ Feature: Compare files
        <<< str x
        """
 
-  @skip
   Scenario: Different binary data
     Given file1 contains the following binary data:
         """
-        0x01
+        01
         """
       And file2 contains the following binary data:
         """
-        0x02
+        02
         """
      When I compare file1 and file2
      Then result is the following:
@@ -61,7 +60,6 @@ Feature: Compare files
        <<< hex 02
        """
 
-  @skip
   Scenario: Different mixed data
     Given file1 contains the following binary data:
         """
@@ -78,4 +76,12 @@ Feature: Compare files
        Difference starting at offset 0 (size 1):
        >>> hex 01
        <<< hex 30
+       """
+     When I compare file2 and file1
+     Then result is the following:
+       """
+       Files file2 and file1 are different.
+       Difference starting at offset 0 (size 1):
+       >>> hex 30
+       <<< hex 01
        """
