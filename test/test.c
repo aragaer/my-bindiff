@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <bindiff.h>
 
@@ -9,6 +10,12 @@ int tests_run = 0;
 
 static char *test_compare_empty() {
   diff_t *result = compare(NULL, NULL, 0);
+  mu_assert("Should be no differences", result == NULL);
+  return NULL;
+}
+
+static char *test_compare_similar() {
+  diff_t *result = compare("hello", "hello", 6);
   mu_assert("Should be no differences", result == NULL);
   return NULL;
 }
@@ -59,11 +66,78 @@ static char *test_printable_if_both_printable() {
   return NULL;
 }
 
+static char *test_compare_almost_similar() {
+  char *str1 = "hello1";
+  char *str2 = "hello2";
+  diff_t *result = compare(str1, str2, strlen(str1));
+  mu_assert("Should be different", result != NULL);
+  mu_assert("Only one difference", result->next == NULL);
+  mu_assert("Difference is 1 byte", result->size == 1);
+  mu_assert("Difference is the last byte only",
+            result->first == strchr(str1, '1')
+            && result->second == strchr(str2, '2'));
+  mu_assert("Offset is correct", result->offset == strchr(str1, '1')-str1);
+  mu_assert("Difference is printable", result->printable);
+  free(result);
+  return NULL;
+}
+
+static char *test_compare_almost_similar_bin() {
+  char *str1 = "hello\x01";
+  char *str2 = "hello\x02";
+  diff_t *result = compare(str1, str2, strlen(str1));
+  mu_assert("Should be different", result != NULL);
+  mu_assert("Only one difference", result->next == NULL);
+  mu_assert("Difference is 1 byte", result->size == 1);
+  mu_assert("Difference is the last byte only",
+            result->first == strchr(str1, 1)
+            && result->second == strchr(str2, 2));
+  mu_assert("Offset is correct", result->offset == strchr(str1, 1)-str1);
+  mu_assert("Difference is not printable", !result->printable);
+  free(result);
+  return NULL;
+}
+
+static char *test_compare_completely_different() {
+  char *str1 = "abcd";
+  char *str2 = "1234";
+  diff_t *result = compare(str1, str2, strlen(str1));
+  mu_assert("Should be different", result != NULL);
+  mu_assert("Only one difference", result->next == NULL);
+  mu_assert("Everything is different", result->size == strlen(str1));
+  mu_assert("Difference starts immediately",
+            result->first == str1 && result->second == str2);
+  mu_assert("Offset is 0", result->offset == 0);
+  mu_assert("Difference is printable", result->printable);
+  free(result);
+  return NULL;
+}
+
+static char *test_compare_print_bin_mix() {
+  char *str1 = "abc\x01";
+  char *str2 = "abde";
+  diff_t *result = compare(str1, str2, strlen(str1));
+  mu_assert("Should be different", result != NULL);
+  mu_assert("Only one difference", result->next == NULL);
+  mu_assert("Correct difference size", result->size == 2);
+  mu_assert("Difference starts at right offset",
+            result->first == str1+2 && result->second == str2+2);
+  mu_assert("Offset is correct", result->offset == 2);
+  mu_assert("Difference is not printable", !result->printable);
+  free(result);
+  return NULL;
+}
+
 static char *all_tests() {
   mu_run_test(test_compare_empty);
+  mu_run_test(test_compare_similar);
   mu_run_test(test_compare_different_string);
   mu_run_test(test_compare_different_binary);
   mu_run_test(test_printable_if_both_printable);
+  mu_run_test(test_compare_almost_similar);
+  mu_run_test(test_compare_almost_similar_bin);
+  mu_run_test(test_compare_completely_different);
+  mu_run_test(test_compare_print_bin_mix);
   return NULL;
 }
 
