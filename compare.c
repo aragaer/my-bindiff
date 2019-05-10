@@ -10,5 +10,7 @@ diff_t *compare(char *first, char *second, size_t size) {
   result->next = NULL;
   result->first = first;
   result->second = second;
+  result->printable = 1;
+  result->offset = 0;
   return result;
 }

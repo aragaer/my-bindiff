@@ -1,10 +1,11 @@
+import codecs
 import os
 import subprocess
 
 from nose.tools import eq_, ok_
 
-def prepare_file(path, data):
-    with open(path, "w") as out:
+def prepare_file(path, data, mode="w"):
+    with open(path, mode) as out:
         out.write(data)
 
 @given(u'{filename} is empty')
@@ -16,6 +17,13 @@ def step_impl(context, filename):
 def step_impl(context, filename):
     prepare_file(os.path.join(context.dir, filename),
                  context.text)
+
+
+@given(u'{filename} contains the following binary data')
+def step_impl(context, filename):
+    prepare_file(os.path.join(context.dir, filename),
+                 codecs.decode(context.text, "hex_codec"),
+                 "wb")
 
 
 @when(u'I compare {filename1} and {filename2}')

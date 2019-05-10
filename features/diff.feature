@@ -24,7 +24,7 @@ Feature: Compare files
        Files file1 and file2 have different size (0 and 1).
        """
 
-  Scenario: Different data
+  Scenario: Different printable data
     Given file1 contains the following:
         """
         y
@@ -34,7 +34,48 @@ Feature: Compare files
         x
         """
      When I compare file1 and file2
-     Then result starts with the following:
+     Then result is the following:
        """
        Files file1 and file2 are different.
+       Difference starting at offset 0 (size 1):
+       >>> str y
+       <<< str x
+       """
+
+  @skip
+  Scenario: Different binary data
+    Given file1 contains the following binary data:
+        """
+        0x01
+        """
+      And file2 contains the following binary data:
+        """
+        0x02
+        """
+     When I compare file1 and file2
+     Then result is the following:
+       """
+       Files file1 and file2 are different.
+       Difference starting at offset 0 (size 1):
+       >>> hex 01
+       <<< hex 02
+       """
+
+  @skip
+  Scenario: Different mixed data
+    Given file1 contains the following binary data:
+        """
+        01
+        """
+      And file2 contains the following:
+        """
+        0
+        """
+     When I compare file1 and file2
+     Then result is the following:
+       """
+       Files file1 and file2 are different.
+       Difference starting at offset 0 (size 1):
+       >>> hex 01
+       <<< hex 30
        """

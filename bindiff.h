@@ -4,6 +4,8 @@
 typedef struct diff_s {
   char *first, *second;
   size_t size;
+  off_t offset;
+  int printable;
   struct diff_s *next;
 } diff_t;
 

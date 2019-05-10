@@ -22,6 +22,8 @@ static char *test_compare_different() {
   mu_assert("Difference is 1 byte", result->size == 1);
   mu_assert("Difference starts immediately",
             result->first == str1 && result->second == str2);
+  mu_assert("Offset is 0", result->offset == 0);
+  mu_assert("Difference is printable", result->printable);
   free(result);
   return NULL;
 }
