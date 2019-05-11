@@ -31,24 +31,12 @@ int main(int argc, char *argv[]) {
       printf("Files %s and %s are different.\n", file1, file2);
 
     while (result) {
+      char buf[80];
       diff_t *current = result;
       fprintf(stderr, "Result: %p\n", current);
       result = result->next;
-      printf("Difference starting at offset %ld (size %ld):\n",
-             current->offset, current->size);
-      if (current->printable) {
-        printf(">>> str %.*s\n", (int) current->size, current->first);
-        printf("<<< str %.*s\n", (int) current->size, current->second);
-      } else {
-        int i;
-        printf(">>> hex");
-        for (i = 0; i < current->size; i++)
-          printf(" %02X", (unsigned char) current->first[i]);
-        printf("\n<<< hex");
-        for (i = 0; i < current->size; i++)
-          printf(" %02X", (unsigned char) current->second[i]);
-        printf("\n");
-      }
+      format_difference(buf, sizeof(buf), current);
+      printf("%s", buf);
       free(current);
     }
 

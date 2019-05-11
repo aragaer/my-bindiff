@@ -1,7 +1,7 @@
 CPPFLAGS += -I.
 CFLAGS += -Wall -Werror
 
-COMMON_OFILES = compare.o
+COMMON_OFILES = compare.o format.o
 OFILES = bindiff.o $(COMMON_OFILES)
 TEST_OFILES = test/test.o
 
