@@ -8,6 +8,14 @@
 
 int tests_run = 0;
 
+void free_results(diff_t *result) {
+  while (result) {
+    diff_t *to_delete = result;
+    result = result->next;
+    free(to_delete);
+  }
+}
+
 static char *test_compare_empty() {
   diff_t *result = compare(NULL, NULL, 0);
   mu_assert("Should be no differences", result == NULL);
@@ -31,7 +39,7 @@ static char *test_compare_different_string() {
             result->first == str1 && result->second == str2);
   mu_assert("Offset is 0", result->offset == 0);
   mu_assert("Difference is printable", result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -46,7 +54,7 @@ static char *test_compare_different_binary() {
             result->first == str1 && result->second == str2);
   mu_assert("Offset is 0", result->offset == 0);
   mu_assert("Difference is not printable", !result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -56,12 +64,12 @@ static char *test_printable_if_both_printable() {
   diff_t *result = compare(str1, str2, 1);
   mu_assert("Difference is not printable if first is not printable",
             !result->printable);
-  free(result);
+  free_results(result);
 
   result = compare(str2, str1, 1);
   mu_assert("Difference is not printable if second is not printable",
             !result->printable);
-  free(result);
+  free_results(result);
 
   return NULL;
 }
@@ -78,7 +86,7 @@ static char *test_compare_almost_similar() {
             && result->second == strchr(str2, '2'));
   mu_assert("Offset is correct", result->offset == strchr(str1, '1')-str1);
   mu_assert("Difference is printable", result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -94,7 +102,7 @@ static char *test_compare_almost_similar_bin() {
             && result->second == strchr(str2, 2));
   mu_assert("Offset is correct", result->offset == strchr(str1, 1)-str1);
   mu_assert("Difference is not printable", !result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -109,7 +117,7 @@ static char *test_compare_completely_different() {
             result->first == str1 && result->second == str2);
   mu_assert("Offset is 0", result->offset == 0);
   mu_assert("Difference is printable", result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -124,7 +132,7 @@ static char *test_compare_print_bin_mix() {
             result->first == str1+2 && result->second == str2+2);
   mu_assert("Offset is correct", result->offset == 2);
   mu_assert("Difference is not printable", !result->printable);
-  free(result);
+  free_results(result);
   return NULL;
 }
 
@@ -189,11 +197,7 @@ static char *test_two_differences() {
     };
   diff_t *result = compare(str1, str2, strlen(str1));
   char *test_result = verify_differences(result, expected, NELEM(expected));
-  while (result) {
-    diff_t *to_delete = result;
-    result = result->next;
-    free(to_delete);
-  }
+  free_results(result);
   return test_result;
 }
 
