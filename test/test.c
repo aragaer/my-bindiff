@@ -136,49 +136,58 @@ static char *test_compare_print_bin_mix() {
   return NULL;
 }
 
-struct expected_difference {
-  char *first, *second;
-  off_t offset;
-  size_t size;
-  int printable;
-};
-
-#define NELEM(a) (sizeof(a)/(sizeof(*a)))
-
-char msg[80];
-
 static char *verify_one_difference(diff_t *result,
-                                   struct expected_difference *expected) {
-  sprintf(msg, "Should be a difference");
-  mu_assert(msg, result != NULL);
-  mu_assert("Correct size", result->size == expected->size);
-  mu_assert("Correct start position",
-            result->first == expected->first
-            && result->second == expected->second);
-  mu_assert("Correct offset", result->offset == expected->offset);
-  mu_assert("Correct printable flag",
-            result->printable == expected->printable);
-  return NULL;
+                                   diff_t *expected) {
+  static char msg[1024];
+  size_t position = sprintf(msg, "Wrong difference.\nExpected:\n");
+  position += format_difference(msg+position, sizeof(msg)-position, expected);
+  position += sprintf(msg+position, "Actual:\n");
+  if (result == NULL) {
+    sprintf(msg+position, "No difference detected");
+    return msg;
+  }
+  position += format_difference(msg+position, sizeof(msg)-position, result);
+  size_t errpos = position;
+  if (result->size != expected->size)
+    errpos += sprintf(msg+errpos, "Incorrect size: expected %ld, actual %ld\n",
+                      expected->size, result->size);
+  if (result->first != expected->first)
+    errpos += sprintf(msg+errpos, "Incorrect first location: expected %p, actual %p\n",
+                      expected->first, result->first);
+  if (result->second != expected->second)
+    errpos += sprintf(msg+errpos, "Incorrect second location: expected %p, actual %p\n",
+                      expected->second, result->second);
+  if (result->offset != expected->offset)
+    errpos += sprintf(msg+errpos, "Incorrect offset: expected %ld, actual %ld\n",
+                      expected->offset, result->offset);
+  if (result->printable != expected->printable)
+    errpos += sprintf(msg+errpos, "Incorrect printable flag: expected %d, actual %d\n",
+                      expected->printable, result->printable);
+  return errpos == position ? NULL : msg;
 }
 
 static char *verify_differences(diff_t *result,
-                                struct expected_difference *expected,
-                                int count) {
-  int i;
-  for (i = 0; i < count; i++) {
-    char *test_result = verify_one_difference(result, expected+i);
+                                diff_t *expected) {
+  while (expected) {
+    char *test_result = verify_one_difference(result, expected);
     if (test_result != NULL)
       return test_result;
     result = result->next;
+    expected = expected->next;
   }
-  mu_assert("No more differences", result == NULL);
+  if (result != NULL) {
+    static char msg[256] = "Unexpected difference:\n";
+    size_t position = strlen(msg);
+    format_difference(msg+position, sizeof(msg)-position, result);
+    return msg;
+  }
   return NULL;
 }
 
 static char *test_two_differences() {
   char *str1 = "axxxxxxxxxb";
   char *str2 = "cxxxxxxxxxd";
-  struct expected_difference expected[] =
+  diff_t expected[] =
     {
      {
       .first = str1,
@@ -186,6 +195,7 @@ static char *test_two_differences() {
       .offset = 0,
       .size = 1,
       .printable = 1,
+      .next = expected+1,
      },
      {
       .first = strchr(str1, 'b'),
@@ -193,10 +203,11 @@ static char *test_two_differences() {
       .offset = strchr(str1, 'b') - str1,
       .size = 1,
       .printable = 1,
+      .next = NULL,
      },
     };
   diff_t *result = compare(str1, str2, strlen(str1));
-  char *test_result = verify_differences(result, expected, NELEM(expected));
+  char *test_result = verify_differences(result, expected);
   free_results(result);
   return test_result;
 }
@@ -207,7 +218,8 @@ static char *test_format_text_difference() {
   diff_t difference = {.first = "y", .second = "x",
                        .size = 1, .offset = 0,
                        .printable = 1, .next = NULL};
-  format_difference(buf, sizeof(buf), &difference);
+  size_t result = format_difference(buf, sizeof(buf), &difference);
+  mu_assert("Returns the number of characters", result == strlen(buf));
   mu_assert("Text formatting is correct",
             strcmp(buf, expected) == 0);
   return NULL;
@@ -219,7 +231,8 @@ static char *test_format_binary_difference() {
   diff_t difference = {.first = "\x01", .second = "\x02",
                        .size = 1, .offset = 0,
                        .printable = 0, .next = NULL};
-  format_difference(buf, sizeof(buf), &difference);
+  size_t result = format_difference(buf, sizeof(buf), &difference);
+  mu_assert("Returns the number of characters", result == strlen(buf));
   mu_assert("Binary formatting is correct",
             strcmp(buf, expected) == 0);
   return NULL;

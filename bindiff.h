@@ -12,6 +12,6 @@ typedef struct diff_s {
 } diff_t;
 
 diff_t *compare(char *first, char *second, size_t size);
-void format_difference(char *buf, size_t n, diff_t *difference);
+size_t format_difference(char *buf, size_t n, diff_t *difference);
 
 #endif  // _BINDIFF_H_
