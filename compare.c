@@ -18,6 +18,10 @@ void reverse(diff_t **root) {
   *root = new_root;
 }
 
+int is_printable(char c) {
+  return isprint(c) || c == '\0';
+}
+
 diff_t *compare(char *first, char *second, size_t size) {
   if (size == 0)
     return NULL;
@@ -38,11 +42,11 @@ diff_t *compare(char *first, char *second, size_t size) {
         difference->next = NULL;
         difference->first = first+i;
         difference->second = second+i;
-        difference->printable = isprint(first[i]) && isprint(second[i]);
+        difference->printable = is_printable(first[i]) && is_printable(second[i]);
         difference->offset = i;
       } else {
         difference->size += 1;
-        difference->printable &= isprint(first[i]) && isprint(second[i]);
+        difference->printable &= is_printable(first[i]) && is_printable(second[i]);
       }
     }
 

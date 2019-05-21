@@ -238,6 +238,26 @@ static char *test_format_binary_difference() {
   return NULL;
 }
 
+static char *test_strings_different_length() {
+  char *str1 = "yyyy\0xxxx";
+  char *str2 = "xxx\0xxxxx";
+  diff_t expected[] =
+    {
+      {
+        .first = str1,
+        .second = str2,
+        .offset = 0,
+        .size = 5,
+        .printable = 1,
+        .next = NULL,
+      },
+    };
+  diff_t *result = compare(str1, str2, 9);
+  char *test_result = verify_differences(result, expected);
+  free_results(result);
+  return test_result;
+}
+
 static char *all_tests() {
   mu_run_test(test_compare_empty);
   mu_run_test(test_compare_similar);
@@ -251,6 +271,7 @@ static char *all_tests() {
   mu_run_test(test_two_differences);
   mu_run_test(test_format_text_difference);
   mu_run_test(test_format_binary_difference);
+  mu_run_test(test_strings_different_length);
   return NULL;
 }
 
