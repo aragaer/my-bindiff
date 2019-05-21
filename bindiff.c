@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
       printf("Files %s and %s are different.\n", file1, file2);
 
     while (result) {
-      char buf[80];
+      char buf[1024];
       diff_t *current = result;
       fprintf(stderr, "Result: %p\n", current);
       result = result->next;
